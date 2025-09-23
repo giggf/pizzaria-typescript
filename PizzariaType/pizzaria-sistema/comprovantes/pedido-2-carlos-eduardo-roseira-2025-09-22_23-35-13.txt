@@ -1,0 +1,20 @@
+====================================
+      COMPROVANTE DE COMPRA
+====================================
+Pedido #2
+Data: 22/09/2025 23:35:13
+
+Cliente: Carlos Eduardo Roseira
+Telefone: (11) 91462-1630
+------------------------------------
+Itens Comprados:
+- 1x Calabresa (R$ 45,50) = R$ 45,50
+- 1x Coca-Cola 2L (R$ 12,00) = R$ 12,00
+- 1x Petit Gateau (R$ 25,00) = R$ 25,00
+------------------------------------
+Forma de Pagamento: Dinheiro
+
+TOTAL DO PEDIDO: R$ 82,50
+====================================
+   Obrigado pela preferência!
+====================================

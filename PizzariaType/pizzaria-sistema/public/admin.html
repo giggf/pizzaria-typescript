@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo - Relatórios</title>
+  <link rel="stylesheet" href="style.css"> <!-- Reutiliza o estilo principal -->
+  <style>
+    .admin-container { padding: 2rem; max-width: 900px; margin: auto; }
+    .report-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .report-table th, .report-table td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+    .report-table th { background-color: #f2f2f2; }
+    .report-table td:last-child { text-align: right; font-weight: bold; }
+    #loading-admin { text-align: center; font-size: 1.2rem; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📊 Painel Administrativo 📊</h1>
+    <a href="/" class="nav-link">Voltar para o Cardápio</a>
+  </header>
+
+  <main class="admin-container">
+    <div id="loading-admin">Carregando relatórios...</div>
+
+    <div id="reports-content" style="display: none;">
+      <!-- Card do Relatório Mensal -->
+      <div class="report-card">
+        <h2>Vendas por Mês</h2>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th style="text-align: right;">Total Arrecadado</th>
+            </tr>
+          </thead>
+          <tbody id="monthly-report-body">
+            <!-- Dados serão inseridos pelo JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card do Relatório Semanal -->
+      <div class="report-card">
+        <h2>Vendas por Semana</h2>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th style="text-align: right;">Total Arrecadado</th>
+            </tr>
+          </thead>
+          <tbody id="weekly-report-body">
+            <!-- Dados serão inseridos pelo JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

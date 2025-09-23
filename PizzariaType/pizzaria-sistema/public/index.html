@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardápio da Pizzaria</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header>
+    <h1>🍕 Cardápio da Pizzaria 🍕</h1>
+    <nav class="main-nav">
+      <a href="/cadastro.html" class="nav-link">Cadastrar Cliente</a>
+      <a href="/cadastro-produto.html" class="nav-link">Cadastrar Produto</a>
+      <a href="/admin.html" class="nav-link">Painel Admin</a>
+    </nav>
+    <div id="cart-icon" class="cart-icon">
+      🛒
+      <span id="cart-count" class="cart-count">0</span>
+    </div>
+  </header>
+
+  <div class="filter-container">
+    <button class="filter-btn active" data-categoria="todos">Mostrar Todos</button>
+    <button class="filter-btn" data-categoria="pizza">Pizzas Salgadas</button>
+    <button class="filter-btn" data-categoria="pizzas doces">Pizzas Doces</button>
+    <button class="filter-btn" data-categoria="bebida">Bebidas</button>
+    <button class="filter-btn" data-categoria="sobremesa">Sobremesas</button>
+  </div>
+
+  <main id="menu-container">
+    <div class="products-section">
+      <h2>Produtos</h2>
+      <div id="products-grid-container" class="products-grid">
+        <!-- Todos os produtos serão inseridos aqui pelo JS -->
+      </div>
+    </div>
+  </main>
+
+  <div id="loading">Carregando cardápio...</div>
+
+  <div id="cart-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2>Meu Carrinho</h2>
+      <div id="cart-items"></div>
+      <div class="cart-total">
+        <strong>Total:</strong>
+        <span id="cart-total-value">R$ 0,00</span>
+      </div>
+      <div id="checkout-section" class="checkout-section">
+        <hr>
+        <h3>Finalizar Pedido</h3>
+        <div class="form-group">
+          <label for="cliente-select">Selecione o Cliente</label>
+          <select id="cliente-select" required>
+            <option value="">Carregando clientes...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pagamento-select">Forma de Pagamento</label>
+          <select id="pagamento-select" required>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="credito">Crédito</option>
+            <option value="debito">Débito</option>
+            <option value="pix">PIX</option>
+          </select>
+        </div>
+        <button id="checkout-btn" class="checkout-btn">Finalizar Pedido</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-product-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-edit-modal" class="close-button">&times;</span>
+      <h2>Editar Produto</h2>
+      <form id="edit-product-form" class="form-card" style="box-shadow: none; padding: 0;">
+        <input type="hidden" id="edit-product-id">
+        <div class="form-group">
+          <label for="edit-nome">Nome do Produto</label>
+          <input type="text" id="edit-nome" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-descricao">Descrição</label>
+          <input type="text" id="edit-descricao" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-preco">Preço</label>
+          <input type="number" step="0.01" id="edit-preco" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-categoria">Categoria</label>
+          <select id="edit-categoria" required>
+              <option value="pizza">Pizza Salgada</option>
+              <option value="pizzas doces">Pizza Doce</option>
+              <option value="bebida">Bebida</option>
+              <option value="sobremesa">Sobremesa</option>
+          </select>
+        </div>
+        <button type="submit">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+.nav-link { color: white; text-decoration: none; margin-top: 10px; display: inline-block; }
+.cadastro-container { padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+.form-card { background: var(--card-background); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px var(--shadow-color); width: 100%; max-width: 500px; }
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+.form-group input { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.form-card button { width: 100%; padding: 1rem; font-size: 1rem; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer; }
+.status-message { margin-top: 1rem; padding: 1rem; border-radius: 5px; text-align: center; }
+.success { background-color: #d4edda; color: #155724; }
+.error { background-color: #f8d7da; color: #721c24; }

@@ -1,0 +1,26 @@
+ID,Nome,Descricao,Preco,Categoria
+1,Coca-Cola 2L,Refrigerante de cola,12,bebida
+2,Guaraná Antarctica 2L,Refrigerante de guaraná,11.5,bebida
+3,Sprite 2L,Refrigerante de limao,9.5,bebida
+4,Água Mineral com Gás 500ml,Água mineral gaseificada,5,bebida
+5,Água Mineral sem Gás 500ml,Água mineral natural,4.5,bebida
+6,Suco de Laranja 1L,Suco natural de laranja,13,bebida
+7,Suco de Abacaxi 1L,Suco natural de abacaxi,12,bebida
+8,Suco de Uva 1L, Suco natural de uva integral,15,bebida
+9,Cerveja Heineken Long Neck,Cerveja puro malte,9,bebida
+10,Cerveja Brahma Long Neck,Cerveja,7,bebida
+11,Margherita,"Molho de tomate, mussarela e manjericão",42,pizza
+12,Calabresa,"Molho de tomate, mussarela e calabresa fatiada",45.5,pizza
+13,Quatro Queijos,"Mussarela, provolone, parmesão e gorgonzola",52,pizza
+14,Frango com Catupiry,Frango desfiado com Catupiry cremoso,49.5,pizza
+15,Portuguesa,"Presunto, mussarela, ovo, cebola e azeitona",48,pizza
+16,Pepperoni,"Molho de tomate, mussarela e pepperoni",51,pizza
+17,Vegetariana,"Mussarela, brócolis, milho, ervilha e palmito",47.5,pizza
+19,Atum,"Molho de tomate, atum sólido e cebola",46,pizza
+20,Lombo Canadense,"Mussarela, lombo canadense e champignon",53,pizza
+22,Petit Gateau,Bolo de chocolate recheado com calda quente,25,sobremesa
+23,Palmito,"Molho de tomate, mussarela, palmito",47.5,pizza
+24,Pizza de Nutella,Nutella,40.5,pizzas doces
+25,Banana caramleada,"Banana, açúcar, canela ",25,sobremesa
+26,Romeu e Julieta,Queijo branco e goiabada cascão,36.5,pizzas doces
+27,Confete,Pasta de brigadeiro e confetes coloridos,34,pizzas doces
