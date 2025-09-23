@@ -107,7 +107,7 @@ Todas as rotas da API estão sob o prefixo `/api`.
 - **Descrição:** Retorna a lista de produtos. Pode ser filtrada por categoria.
 - **Parâmetros de Query (Opcional):**
 	- **categoria:** Filtra os resultados. Ex: `/api/produtos?categoria=bebida`. Valores possíveis: `pizza`, `pizzas doces`, `bebida`, `sobremesa`.
-- **Resposta de Sucesso (200 OK):** Um array de objetos `Produto.
+- **Resposta de Sucesso (200 OK):** Um array de objetos `Produto`.
 
 `POST /api/produtos`
 
