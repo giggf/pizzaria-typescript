@@ -1,0 +1,20 @@
+====================================
+      COMPROVANTE DE COMPRA
+====================================
+Pedido #1
+Data: 22/09/2025 23:34:50
+
+Cliente: Giovana de Godoy Felisbino
+Telefone: 11 974762105
+------------------------------------
+Itens Comprados:
+- 1x Calabresa (R$ 45,50) = R$ 45,50
+- 1x Sprite 2L (R$ 9,50) = R$ 9,50
+- 1x Margherita (R$ 42,00) = R$ 42,00
+------------------------------------
+Forma de Pagamento: Debito
+
+TOTAL DO PEDIDO: R$ 97,00
+====================================
+   Obrigado pela preferência!
+====================================

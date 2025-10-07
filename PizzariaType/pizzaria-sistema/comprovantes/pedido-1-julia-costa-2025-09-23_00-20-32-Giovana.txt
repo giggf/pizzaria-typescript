@@ -1,0 +1,21 @@
+====================================
+      COMPROVANTE DE COMPRA
+====================================
+Pedido #1
+Data: 23/09/2025 00:20:32
+
+Cliente: Julia Costa
+Telefone: 11 65893214
+------------------------------------
+Itens Comprados:
+- 1x Guaraná Antarctica 2L (R$ 11,50) = R$ 11,50
+- 1x Calabresa (R$ 45,50) = R$ 45,50
+- 1x Confete (R$ 34,00) = R$ 34,00
+- 1x Banana caramleada (R$ 25,00) = R$ 25,00
+------------------------------------
+Forma de Pagamento: Credito
+
+TOTAL DO PEDIDO: R$ 116,00
+====================================
+   Obrigado pela preferência!
+====================================

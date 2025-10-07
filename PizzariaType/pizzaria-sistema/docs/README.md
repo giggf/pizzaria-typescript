@@ -1,8 +1,3 @@
-Bárbara Falcão: 2506486
-Giovana de Godoy Felisbino: 2507579
-Giovanna Falgetano: 2512938
-Lais da Rosa Câmara: 2505420
-
 # Sistema de Gestão de Pizzaria
 
 ## 1. Visão Geral
@@ -63,51 +58,37 @@ O código é organizado seguindo o padrão de design **Model-Service-Controller*
 **Passos para instalação:**
 
 1.  Clone o repositório ou navegue até a pasta raiz do projeto.
-2.  Abra um terminal e instale as dependências:
+2.  Acessar a pasta "pizzaria-sistema" pelo terminal 
+    ```bash
+    cd 'pasta em que o repositório se encontra em sua máquina'
+    ```
+    ```bash
+    cd pizzaria-sistema
+    ```
+3.  Abra um terminal e instale as dependências:
     ```bash
     npm install
     ```
-
+4. Coloque no terminal 
+    ```bash
+    npm install express
+    ```
+    
 **Para executar em modo de desenvolvimento (com recarregamento automático):**
 ```bash
 npm run dev
+```
 
-O servidor será iniciado em http://localhost:3000.
+O servidor será iniciado em `http://localhost:3000`.
 
-Para compilar e executar em modo de produção:
+**Para compilar e executar em modo de produção:**
 
-1. Compile o código TypeScript para JavaScript:
-- Bash (terminal) -
+1.  Compile o código TypeScript para JavaScript:
+```bash
 npm run build
+```
 
-2. Inicie o servidor a partir dos arquivos compilados na pasta /dist:
-- Bash (terminal) -
+2.  Inicie o servidor a partir dos arquivos compilados na pasta /dist:
+```bash
 npm run start
-
-6. Documentação da API (Endpoints)
-Todas as rotas da API estão sob o prefixo /api.
-Módulo: Produtos (Cardápio)
-GET /api/produtos
-Descrição: Retorna a lista de produtos. Pode ser filtrada por categoria.
-Parâmetros de Query (Opcional):
-categoria: Filtra os resultados. Ex: /api/produtos?categoria=bebida. Valores possíveis: pizza, pizzas doces, bebida, sobremesa.
-Resposta de Sucesso (200 OK): Um array de objetos Produto.
-POST /api/produtos
-Descrição: Adiciona um novo produto.
-Corpo da Requisição (Body): Objeto Produto sem o id.
-Resposta de Sucesso (201 Created): O objeto do produto recém-criado.
-PUT /api/produtos/:id
-Descrição: Atualiza as informações de um produto existente.
-Corpo da Requisição (Body): Um objeto com os campos a serem atualizados.
-Resposta de Sucesso (200 OK): O objeto do produto atualizado.
-Resposta de Erro (404 Not Found): Se o produto não for encontrado.
-DELETE /api/produtos/:id
-Descrição: Exclui um produto do cardápio pelo seu ID.
-Resposta de Sucesso (200 OK).
-Resposta de Erro (404 Not Found).
-Módulo: Clientes
-GET /api/clientes
-Descrição: Retorna a lista de todos os clientes cadastrados.
-POST /api/clientes
-Descrição: Cadastra um novo cliente.
-Corpo da Requisição (Body): Objeto Cliente com nome e telefone.
+```
