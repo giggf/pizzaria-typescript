@@ -75,20 +75,20 @@ O código é organizado seguindo o padrão de design **Model-Service-Controller*
     ```
     
 **Para executar em modo de desenvolvimento (com recarregamento automático):**
-```bash
-npm run dev
-```
+    ```bash
+    npm run dev
+    ```
 
 O servidor será iniciado em `http://localhost:3000`.
 
 **Para compilar e executar em modo de produção:**
 
 1.  Compile o código TypeScript para JavaScript:
-```bash
-npm run build
-```
+    ```bash
+    npm run build
+    ```
 
 2.  Inicie o servidor a partir dos arquivos compilados na pasta /dist:
-```bash
-npm run start
-```
+    ```bash
+    npm run start
+    ```
