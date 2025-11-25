@@ -1,37 +1,50 @@
+// src/server.ts
+
 import express from 'express';
+import cors from 'cors';
+import path from 'path';
 import apiRoutes from './routes/api';
-import { ProdutoService } from './services/ProdutoService';
+
+// Import NOMEADO com chaves {} - Esta é a correção principal!
+import { pool } from './database/database';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-
-// --- ADICIONE ESTA LINHA AQUI ---
-// Este middleware diz ao Express: "Sirva todos os arquivos da pasta 'public' como arquivos estáticos".
-app.use(express.static('public')); 
-// ---------------------------------
-
-// Nossas rotas da API continuam funcionando normalmente no prefixo /api
-app.use('/api', apiRoutes);
-
-// ... imports no topo do arquivo
-import { ClienteService } from './services/ClienteService'; // Adicione este import
-
-// ...
-
+// Função assíncrona para iniciar o servidor
 async function startServer() {
   try {
-    // Agora inicializamos os dois serviços
-    await ProdutoService.inicializarProdutos();
-    await ClienteService.inicializarClientes(); // Adicione esta linha
+    // 1. Tenta conectar ao banco de dados primeiro
+    const client = await pool.connect();
+    console.log('✅ Base de dados conectada com sucesso!');
+    client.release(); // Libera o cliente de volta para o pool
 
+    // 2. Se a conexão for bem-sucedida, configura e inicia o servidor Express
+    app.use(cors());
+    app.use(express.json());
+
+    // Configura o Express para servir os arquivos estáticos da pasta 'public'
+    app.use(express.static(path.join(__dirname, '../public')));
+
+    // Rota para a página inicial, que deve ser a de login
+    app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, '../public/login.html'));
+    });
+    
+    // Configura as rotas da API, prefixadas com /api
+    app.use('/api', apiRoutes);
+
+    // Inicia o servidor na porta especificada
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     });
+
   } catch (error) {
-    console.error("❌ Falha ao iniciar o servidor:", error);
+    // Se a conexão com o banco falhar, o servidor não inicia
+    console.error('❌ Falha ao conectar com o banco de dados:', error);
+    process.exit(1); // Encerra o processo com um código de erro
   }
 }
 
+// Chama a função para iniciar tudo
 startServer();

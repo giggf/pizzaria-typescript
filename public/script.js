@@ -1,242 +1,389 @@
-window.onload = function() {
-  // --- Referências do DOM ---
-  const menuContainer = document.getElementById('menu-container');
-  const productsGridContainer = document.getElementById('products-grid-container');
-  const loadingDiv = document.getElementById('loading');
-  
-  const cartIcon = document.getElementById('cart-icon');
-  const cartCountSpan = document.getElementById('cart-count');
-  const cartModal = document.getElementById('cart-modal');
-  const closeModalButton = document.querySelector('.close-button');
-  const cartItemsDiv = document.getElementById('cart-items');
-  const cartTotalValueSpan = document.getElementById('cart-total-value');
-  
-  const clienteSelect = document.getElementById('cliente-select');
-  const pagamentoSelect = document.getElementById('pagamento-select');
-  const checkoutBtn = document.getElementById('checkout-btn');
-  const checkoutSection = document.getElementById('checkout-section');
-  
-  const editProductModal = document.getElementById('edit-product-modal');
-  const closeEditModalButton = document.getElementById('close-edit-modal');
-  const editProductForm = document.getElementById('edit-product-form');
-
-  const filterContainer = document.querySelector('.filter-container');
-
-  let cart = [];
-
-  // --- Funções de Inicialização ---
-  async function initialize() {
-    await Promise.all([ loadProducts(), loadClients() ]);
-    loadCartFromStorage();
-  }
-  
-  // --- Funções do Carrinho ---
-  function loadCartFromStorage(){const storedCart=localStorage.getItem('pizzariaCart');if(storedCart){cart=JSON.parse(storedCart)}updateCartUI()}
-  function saveCartToStorage(){localStorage.setItem('pizzariaCart',JSON.stringify(cart))}
-  function addToCart(productId,productName,productPrice){const existingItem=cart.find(item=>item.id===productId);if(existingItem){existingItem.quantity++}else{cart.push({id:productId,name:productName,price:productPrice,quantity:1})}saveCartToStorage();updateCartUI()}
-  function removeFromCart(productId){cart=cart.filter(item=>item.id!==productId);saveCartToStorage();updateCartUI()}
-  function updateCartUI(){cartItemsDiv.innerHTML='';let total=0;let totalItems=0;cart.forEach(item=>{const itemTotal=item.price*item.quantity;total+=itemTotal;totalItems+=item.quantity;const cartItem=document.createElement('div');cartItem.className='cart-item';cartItem.innerHTML=`<span>${item.name} (x${item.quantity})</span><span>${itemTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span><button class="remove-item-btn" data-id="${item.id}">&times;</button>`;cartItemsDiv.appendChild(cartItem)});cartCountSpan.textContent=totalItems;cartTotalValueSpan.textContent=total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});if(cart.length>0){checkoutSection.style.display='block'}else{checkoutSection.style.display='none'}}
-  
-  // --- Funções de Carregamento de Dados ---
-  async function loadProducts(categoria = 'todos') {
-    loadingDiv.style.display = 'block';
-    menuContainer.style.display = 'none';
+document.addEventListener('DOMContentLoaded', () => {
     
-    let apiUrl = '/api/produtos';
-    if (categoria !== 'todos') {
-      apiUrl += `?categoria=${encodeURIComponent(categoria)}`;
+    // --- 1. Efeitos Visuais (Scroll & Header) ---
+    const header = document.querySelector('header');
+    const headerTitle = document.querySelector('header h1');
+    
+    window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        
+        // Efeito 1: Título desaparecendo suavemente
+        const maxScroll = 300;  // Distância para o efeito máximo
+        const minOpacity = 0.3; // Opacidade mínima
+        let newOpacity = 1 - (scrollY / maxScroll);
+        if (newOpacity < minOpacity) newOpacity = minOpacity;
+        
+        if (headerTitle) {
+            headerTitle.style.opacity = newOpacity;
+        }
+
+        // Efeito 2: Fundo do Header Transparente (Glassmorphism)
+        // Adiciona a classe .header-scrolled quando desce mais de 50px
+        if (scrollY > 50) {
+            if(header) header.classList.add('header-scrolled');
+        } else {
+            if(header) header.classList.remove('header-scrolled');
+        }
+    });
+
+    // --- 2. Autenticação ---
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
     }
 
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) throw new Error('Falha ao carregar produtos.');
-      const produtos = await response.json();
-      
-      loadingDiv.style.display = 'none';
-      menuContainer.style.display = 'flex';
-      
-      productsGridContainer.innerHTML = '';
+    // --- 3. Referências do DOM ---
+    // Produtos e Filtros
+    const productsGridContainer = document.getElementById('products-grid-container');
+    const loadingDiv = document.getElementById('loading');
+    const productsSection = document.querySelector('.products-section');
+    const searchInput = document.getElementById('search-input');
+    const filterContainer = document.querySelector('.sidebar .filter-container');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    // Carrinho e Modais
+    const cartIcon = document.getElementById('cart-icon');
+    const cartCountSpan = document.getElementById('cart-count');
+    const cartModal = document.getElementById('cart-modal');
+    const closeModalButton = cartModal.querySelector('.close-button');
+    const cartItemsDiv = document.getElementById('cart-items');
+    const cartTotalValueSpan = document.getElementById('cart-total-value');
+    const checkoutSection = document.getElementById('checkout-section');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const clienteLogadoSpan = document.getElementById('cliente-logado');
 
-      produtos.forEach(produto => {
-        const card = document.createElement('div');
-        card.className = 'produto-card';
-        card.dataset.cardId = produto.id;
-        const precoFormatado = produto.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    // Comprovante (Receipt)
+    const receiptModal = document.getElementById('receipt-modal');
+    const receiptContent = document.getElementById('receipt-content');
+    const closeReceiptBtn = receiptModal.querySelector('.close-button');
+    const printBtn = document.getElementById('print-receipt-btn');
 
-        card.innerHTML = `
-          <div class="info-container">
-            <div class="categoria">${produto.categoria}</div>
-            <h2 class="nome">${produto.nome}</h2>
-            <p class="descricao">${produto.descricao}</p>
-          </div>
-          <div class="card-footer">
-            <div class="preco">${precoFormatado}</div>
-            <div class="footer-actions">
-              <button class="add-to-cart-btn" data-id="${produto.id}" data-nome="${produto.nome}" data-preco="${produto.preco}">➕</button>
-              <button class="edit-btn" 
-                data-id="${produto.id}" 
-                data-nome="${produto.nome}" 
-                data-descricao="${produto.descricao}"
-                data-preco="${produto.preco}"
-                data-categoria="${produto.categoria}"
-              >✏️</button>
-              <button class="delete-btn" data-id="${produto.id}">🗑️</button>
+    // Variáveis de Estado
+    let usuarioLogado;
+    let cart = [];
+    let searchTimer;
+
+    // --- 4. Inicialização ---
+    async function initialize() {
+        try {
+            // Busca dados do usuário
+            const response = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Sessão inválida.');
+            
+            usuarioLogado = await response.json();
+            
+            // Redireciona se for admin
+            if (usuarioLogado.role === 'admin') {
+                window.location.href = '/admin.html';
+                return;
+            }
+
+            if (clienteLogadoSpan) clienteLogadoSpan.textContent = usuarioLogado.nome;
+            
+            // Carrega dados iniciais
+            loadProducts(); 
+            loadCartFromStorage();
+        } catch (error) {
+            console.error(error.message);
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        }
+    }
+
+    // --- 5. Funções de Produtos ---
+    async function loadProducts(categoria = 'todos', searchTerm = '') {
+        loadingDiv.style.display = 'block';
+        productsSection.style.display = 'none';
+        
+        // Define URL baseada na busca
+        const apiUrl = searchTerm 
+            ? `/api/produtos/search?termo=${encodeURIComponent(searchTerm)}` 
+            : '/api/produtos';
+        
+        try {
+            const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Falha ao carregar produtos.');
+            
+            let produtos = await response.json();
+            
+            // Filtro de categoria no frontend (se não for busca)
+            if (!searchTerm && categoria !== 'todos') {
+                produtos = produtos.filter(p => p.categoria === categoria);
+            }
+            renderProducts(produtos);
+        } catch (error) {
+            loadingDiv.textContent = `Erro: ${error.message}`;
+            loadingDiv.style.display = 'block';
+        } finally {
+            if (!loadingDiv.textContent.startsWith('Erro')) {
+                loadingDiv.style.display = 'none';
+            }
+            productsSection.style.display = 'block';
+        }
+    }
+
+    function renderProducts(produtos) {
+        productsGridContainer.innerHTML = '';
+        
+        if (!produtos || produtos.length === 0) {
+            productsGridContainer.innerHTML = '<p style="text-align: center; width: 100%; color: #666; font-size: 1.2rem;">Nenhum produto encontrado.</p>';
+            return;
+        }
+        
+        produtos.forEach(produto => {
+            const card = document.createElement('div');
+            card.className = 'produto-card';
+            
+            const precoFinal = produto.em_promocao && produto.preco_promocional ? produto.preco_promocional : produto.preco;
+            const precoFormatado = parseFloat(precoFinal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const precoAntigoFormatado = parseFloat(produto.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // Template HTML atualizado com Ícone FontAwesome
+            card.innerHTML = `
+                ${produto.imagem_url ? `<img src="${produto.imagem_url}" alt="${produto.nome}" class="card-image">` : ''}
+                ${produto.em_promocao ? `<div class="promo-badge">PROMO</div>` : ''}
+                
+                <div class="info-container">
+                    <div class="categoria">${produto.categoria}</div>
+                    <h2 class="nome">${produto.nome}</h2>
+                    <p class="descricao">${produto.descricao || ''}</p>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="preco">
+                        ${produto.em_promocao ? `<span class="preco-antigo">${precoAntigoFormatado}</span>` : ''}
+                        ${precoFormatado}
+                    </div>
+                    <div class="footer-actions">
+                        <button class="add-to-cart-btn" 
+                                title="Adicionar ao Carrinho" 
+                                data-id="${produto.id}" 
+                                data-nome="${produto.nome}" 
+                                data-preco="${precoFinal}">
+                            <i class="fas fa-cart-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            productsGridContainer.appendChild(card);
+        });
+    }
+
+    // --- 6. Lógica do Carrinho (Completa) ---
+    function loadCartFromStorage() {
+        const storedCart = localStorage.getItem('pizzariaCart');
+        if(storedCart) {
+            cart = JSON.parse(storedCart);
+        }
+        updateCartUI();
+    }
+
+    function saveCartToStorage() {
+        localStorage.setItem('pizzariaCart', JSON.stringify(cart));
+    }
+
+    function addToCart(productId, productName, productPrice) {
+        const existingItem = cart.find(item => item.id === productId);
+        if(existingItem) {
+            existingItem.quantity++;
+        } else {
+            cart.push({
+                id: productId, 
+                name: productName, 
+                price: productPrice, 
+                quantity: 1
+            });
+        }
+        saveCartToStorage();
+        updateCartUI();
+        
+        // Feedback visual rápido (opcional)
+        cartIcon.style.transform = "scale(1.3)";
+        setTimeout(() => cartIcon.style.transform = "scale(1)", 200);
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.id !== productId);
+        saveCartToStorage();
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        cartItemsDiv.innerHTML = '';
+        let total = 0;
+        let totalItems = 0;
+
+        if (cart.length === 0) {
+            cartItemsDiv.innerHTML = '<p style="text-align:center; color:#888;">Seu carrinho está vazio.</p>';
+            checkoutSection.style.display = 'none';
+        } else {
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                totalItems += item.quantity;
+
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong> <br>
+                        <small>(${item.quantity}x) ${parseFloat(item.price).toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</small>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span style="margin-right:10px; font-weight:bold;">${itemTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>
+                        <button class="remove-item-btn" data-id="${item.id}" title="Remover">&times;</button>
+                    </div>
+                `;
+                cartItemsDiv.appendChild(cartItem);
+            });
+            checkoutSection.style.display = 'block';
+        }
+
+        cartCountSpan.textContent = totalItems;
+        cartTotalValueSpan.textContent = total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    }
+
+    async function handleCheckout() {
+        if (cart.length === 0) return alert('Seu carrinho está vazio.');
+        
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Processando...';
+        
+        const pedidoData = {
+            formaPagamento: document.getElementById('pagamento-select').value,
+            itens: cart.map(item => ({ produtoId: item.id, quantidade: item.quantity }))
+        };
+
+        try {
+            const response = await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(pedidoData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.erro || 'Falha ao finalizar o pedido.');
+            }
+            
+            const result = await response.json();
+            
+            // Pedido Sucesso
+            showReceipt(result, usuarioLogado);
+
+            // Limpa carrinho
+            cart = [];
+            saveCartToStorage();
+            updateCartUI();
+            cartModal.style.display = 'none';
+        } catch (error) {
+            alert(`Erro: ${error.message}`);
+        } finally {
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Finalizar Pedido';
+        }
+    }
+
+    function showReceipt(pedidoResult, cliente) {
+        receiptContent.innerHTML = `
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h3 style="color: var(--primary-color); margin:0;">Pedido #${pedidoResult.id}</h3>
+                <p style="color: #666; margin:0;">${new Date().toLocaleString('pt-BR')}</p>
             </div>
-          </div>`;
-          
-        productsGridContainer.appendChild(card);
-      });
-    } catch (error) {
-        loadingDiv.textContent = error.message;
-        console.error('Erro ao buscar produtos:', error);
+            <p><strong>Cliente:</strong> ${cliente.nome}</p>
+            <hr>
+            <ul style="list-style: none; padding: 0;">
+                ${pedidoResult.itens.map(item => {
+                    // Tenta encontrar nome no carrinho atual ou mostra genérico se já limpou muito rápido (edge case)
+                    // Melhoria: o backend poderia retornar os nomes, mas aqui usamos o cache local
+                    return `<li style="border-bottom: 1px dashed #eee; padding: 5px 0;">
+                        Produto ID ${item.produtoId} <span style="float:right">x${item.quantidade}</span>
+                    </li>`;
+                }).join('')}
+            </ul>
+            <hr>
+            <p><strong>Forma de Pagamento:</strong> ${pedidoResult.formaPagamento.toUpperCase()}</p>
+            <h3 style="text-align: right; margin-top: 1rem;">Total: ${parseFloat(pedidoResult.total).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</h3>
+        `;
+        receiptModal.style.display = 'flex';
     }
-  }
-  
-  async function loadClients() {
-    try {
-      const response = await fetch('/api/clientes');
-      if (!response.ok) throw new Error('Falha na resposta da rede');
-      const clientes = await response.json();
-      clienteSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
-      clientes.forEach(cliente => {
-        const option = document.createElement('option');
-        option.value = cliente.id;
-        option.textContent = `${cliente.nome} - ${cliente.telefone}`;
-        clienteSelect.appendChild(option);
-      });
-    } catch (error) {
-      clienteSelect.innerHTML = '<option value="">Falha ao carregar</option>';
-      console.error("Erro ao carregar clientes:", error);
+
+    // --- 7. Event Listeners ---
+    
+    // Filtros laterais
+    if(filterContainer) {
+        filterContainer.addEventListener('click', function(event) { 
+            const target = event.target.closest('.filter-btn'); 
+            if (target) { 
+                searchInput.value = ''; 
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); 
+                target.classList.add('active'); 
+                loadProducts(target.dataset.categoria); 
+            } 
+        });
     }
-  }
 
-  // --- Funções de Edição de Produto ---
-  function openEditModal(produto) {
-    document.getElementById('edit-product-id').value = produto.id;
-    document.getElementById('edit-nome').value = produto.nome;
-    document.getElementById('edit-descricao').value = produto.descricao;
-    document.getElementById('edit-preco').value = produto.preco;
-    document.getElementById('edit-categoria').value = produto.categoria;
-    editProductModal.style.display = 'block';
-  }
+    // Busca com delay (Debounce)
+    if(searchInput) {
+        searchInput.addEventListener('keyup', (event) => { 
+            clearTimeout(searchTimer); 
+            searchTimer = setTimeout(() => { 
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); 
+                // Tenta ativar o botão 'todos' se existir
+                const btnTodos = document.querySelector('.filter-btn[data-categoria="todos"]');
+                if(btnTodos) btnTodos.classList.add('active'); 
+                
+                loadProducts('todos', event.target.value.trim()); 
+            }, 400); 
+        });
+    }
 
-  async function handleEditSubmit(event) {
-    event.preventDefault();
-    const id = document.getElementById('edit-product-id').value;
-    const produtoAtualizado = {
-      nome: document.getElementById('edit-nome').value,
-      descricao: document.getElementById('edit-descricao').value,
-      preco: parseFloat(document.getElementById('edit-preco').value),
-      categoria: document.getElementById('edit-categoria').value,
+    // Clique no botão "Adicionar ao Carrinho" (Delegação de Evento)
+    productsGridContainer.addEventListener('click', (event) => { 
+        const target = event.target.closest('.add-to-cart-btn'); 
+        if (target) { 
+            // Efeito visual de clique
+            target.style.transform = 'scale(0.95)';
+            setTimeout(() => target.style.transform = 'scale(1)', 100);
+            
+            addToCart(
+                parseInt(target.dataset.id), 
+                target.dataset.nome, 
+                parseFloat(target.dataset.preco)
+            ); 
+        } 
+    });
+
+    // Remover item do carrinho
+    cartItemsDiv.addEventListener('click', (event) => { 
+        const target = event.target.closest('.remove-item-btn'); 
+        if (target) removeFromCart(parseInt(target.dataset.id)); 
+    });
+
+    // Logout
+    if(logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => { 
+            e.preventDefault();
+            localStorage.removeItem('authToken'); 
+            window.location.href = '/login.html'; 
+        });
+    }
+
+    // Modais e Botões
+    cartIcon.onclick = () => { cartModal.style.display = 'flex'; };
+    closeModalButton.onclick = () => { cartModal.style.display = 'none'; };
+    checkoutBtn.addEventListener('click', handleCheckout);
+    closeReceiptBtn.onclick = () => { receiptModal.style.display = 'none'; };
+    printBtn.onclick = () => window.print();
+
+    // Fechar modal clicando fora
+    window.onclick = e => { 
+        if (e.target == cartModal || e.target == receiptModal) {
+            e.target.style.display = 'none'; 
+        }
     };
-    try {
-      const response = await fetch(`/api/produtos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(produtoAtualizado),
-      });
-      if (!response.ok) throw new Error('Falha ao atualizar o produto.');
-      const data = await response.json();
-      updateProductCardInDOM(data);
-      editProductModal.style.display = 'none';
-      alert('Produto atualizado com sucesso!');
-    } catch (error) {
-      alert(error.message);
-      console.error('Erro ao editar produto:', error);
-    }
-  }
 
-  function updateProductCardInDOM(produto) {
-    const card = document.querySelector(`.produto-card[data-card-id="${produto.id}"]`);
-    if (!card) return;
-    card.querySelector('.nome').textContent = produto.nome;
-    card.querySelector('.descricao').textContent = produto.descricao;
-    card.querySelector('.preco').textContent = produto.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    const editBtn = card.querySelector('.edit-btn');
-    editBtn.dataset.nome = produto.nome;
-    editBtn.dataset.descricao = produto.descricao;
-    editBtn.dataset.preco = produto.preco;
-    editBtn.dataset.categoria = produto.categoria;
-    const addBtn = card.querySelector('.add-to-cart-btn');
-    addBtn.dataset.nome = produto.nome;
-    addBtn.dataset.preco = produto.preco;
-  }
-  
-  // --- Função de Checkout ---
-  async function handleCheckout() {
-      const clienteId = clienteSelect.value; const formaPagamento = pagamentoSelect.value;
-      if(!clienteId){alert('Por favor, selecione um cliente.');return}
-      checkoutBtn.disabled=true; checkoutBtn.textContent='Processando...';
-      const pedidoData={clienteId:parseInt(clienteId),formaPagamento:formaPagamento,itens:cart.map(item=>({produtoId:item.id,quantidade:item.quantity}))};
-      try {
-          const response=await fetch('/api/pedidos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pedidoData)});
-          if(!response.ok){throw new Error('Falha ao criar o pedido.')}
-          const result=await response.json();
-          alert('Pedido finalizado!\n\n'+result.comprovante);
-          cart=[];saveCartToStorage();updateCartUI();cartModal.style.display='none';
-      } catch(error){alert('Erro ao finalizar o pedido.');console.error("Erro no checkout:",error)}
-      finally{checkoutBtn.disabled=false;checkoutBtn.textContent='Finalizar Pedido'}
-  }
-  
-  // --- Event Listeners ---
-  filterContainer.addEventListener('click', function(event) {
-    if (event.target && event.target.classList.contains('filter-btn')) {
-      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      const categoria = event.target.dataset.categoria;
-      loadProducts(categoria);
-    }
-  });
-
-  menuContainer.addEventListener('click',function(event){
-    const target = event.target.closest('button');
-    if(!target) return;
-
-    if(target.classList.contains('add-to-cart-btn')){
-      const id=parseInt(target.dataset.id);
-      const nome=target.dataset.nome;
-      const preco=parseFloat(target.dataset.preco);
-      addToCart(id,nome,preco);
-    }
-    if(target.classList.contains('delete-btn')){
-      const id=parseInt(target.dataset.id);
-      if(confirm('Tem certeza que deseja excluir este produto?')){
-        fetch(`/api/produtos/${id}`,{method:'DELETE'})
-          .then(response=>{if(response.ok){target.closest('.produto-card').remove()}else{alert('Falha ao excluir o produto.')}})
-          .catch(error=>console.error('Erro ao excluir produto:',error));
-      }
-    }
-    if (target.classList.contains('edit-btn')) {
-      const produto = { 
-        id: target.dataset.id, 
-        nome: target.dataset.nome, 
-        descricao: target.dataset.descricao, 
-        preco: target.dataset.preco, 
-        categoria: target.dataset.categoria 
-      };
-      openEditModal(produto);
-    }
-  });
-  
-  cartItemsDiv.addEventListener('click',function(event){
-    if(event.target && event.target.classList.contains('remove-item-btn')){
-      const button=event.target;
-      const productId=parseInt(button.dataset.id);
-      removeFromCart(productId);
-    }
-  });
-
-  checkoutBtn.addEventListener('click',handleCheckout);
-  cartIcon.onclick=function(){cartModal.style.display='block'}
-  closeModalButton.onclick=function(){cartModal.style.display='none'}
-  closeEditModalButton.onclick = function() { editProductModal.style.display = 'none'; }
-  editProductForm.addEventListener('submit', handleEditSubmit);
-
-  window.onclick=function(event){
-    if(event.target==cartModal){cartModal.style.display='none'}
-    if (event.target == editProductModal) { editProductModal.style.display = 'none'; }
-  }
-
-  // --- Inicialização da Aplicação ---
-  initialize();
-};
+    // Inicia
+    initialize();
+});

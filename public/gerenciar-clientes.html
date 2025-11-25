@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciar Clientes</title>
+  <link rel="stylesheet" href="admin.css"> <!-- Usando o novo CSS -->
+</head>
+<body>
+  <header>
+    <h1>🍕 Gerenciar Clientes 🍕</h1>
+    <nav><a id="logout-btn" href="#" class="nav-link">Sair</a><a href="/admin.html" class="nav-link">Voltar ao Painel</a></nav>
+  </header>
+
+  <main class="admin-container">
+    <div class="admin-card">
+        <div class="actions-bar">
+            <input type="text" id="search-client-input" placeholder="Pesquisar cliente por nome, email ou telefone...">
+        </div>
+        <div id="client-list"><p>Carregando clientes...</p></div>
+    </div>
+  </main>
+
+ <script src="admin-clientes.js"></script>
+</body>
+</html>

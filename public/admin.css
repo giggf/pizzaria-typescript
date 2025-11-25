@@ -1,0 +1,341 @@
+:root {
+  --primary-color: #e34f05;
+  --primary-dark: #992e00;
+  --primary-light: #ff7300;
+  --background-color: #fdfbf7; 
+  --card-background: #ffffff;
+  --text-color: #333;
+  --border-color: #e0e0e0;
+  --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --gradient-primary: linear-gradient(135deg, #d64100, #ff9100);
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Cabeçalho Admin --- */
+header {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 4px 20px rgba(227, 79, 5, 0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+header h1::after {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 4px;
+  background-color: rgba(255,255,255,0.4);
+  border-radius: 2px;
+}
+
+header nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+header nav a {
+  color: white; 
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 30px; 
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.15); 
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+header nav a:hover {
+  background-color: white;
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+#logout-btn {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: transparent;
+}
+#logout-btn:hover {
+  background-color: #333;
+  color: white;
+}
+
+/* --- Container Principal --- */
+.admin-container {
+  max-width: 95%; 
+  margin: 2rem auto;
+  padding: 0 1rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Cards --- */
+.admin-card, .report-card {
+  background: var(--card-background);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow-light);
+  margin-bottom: 2rem;
+  border: 1px solid #f0f0f0;
+}
+
+.actions-bar, .filters-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #f8f9fa; 
+  padding: 1rem;
+  border-radius: 15px;
+}
+
+/* --- Inputs e Buscas --- */
+input[type="text"], 
+input[type="search"],
+input[type="date"],
+input[type="number"],
+select {
+  padding: 12px 20px;
+  border-radius: 30px;
+  border: 1px solid #ddd;
+  background-color: white;
+  outline: none;
+  font-size: 0.95rem;
+  transition: 0.3s;
+  font-family: 'Roboto', sans-serif;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(227, 79, 5, 0.1);
+}
+
+/* --- Tabelas Modernas --- */
+.data-table, .report-table {
+  width: 100%;
+  border-collapse: separate; 
+  border-spacing: 0;
+  margin-top: 1rem;
+  overflow: hidden; 
+}
+
+.data-table th, .report-table th {
+  background-color: #fff0e6; 
+  color: var(--primary-color);
+  text-align: left;
+  padding: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  border-bottom: 2px solid #ffe0d1;
+}
+
+.data-table td, .report-table td {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #555;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover, .report-table tbody tr:hover {
+  background-color: #fafafa;
+  transform: scale(1.002); 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: 0.2s;
+}
+
+/* --- Botões Padrão --- */
+.btn-primary, #btnGerarRelatorio {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(227, 79, 5, 0.3);
+}
+
+.btn-primary:hover, #btnGerarRelatorio:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(227, 79, 5, 0.4);
+}
+
+.btn-edit, .btn-delete, .delete-client-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: 0.2s;
+  margin-right: 5px;
+}
+
+.btn-edit { background-color: #e3f2fd; color: #1976d2; }
+.btn-edit:hover { background-color: #1976d2; color: white; }
+
+.btn-delete, .delete-client-btn { background-color: #ffebee; color: #c62828; }
+.btn-delete:hover, .delete-client-btn:hover { background-color: #c62828; color: white; }
+
+.btn-preset {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  color: #666;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.btn-preset:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* --- ESTILOS DO MODAL (CORRIGIDO) --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 2.5rem;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 24px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* --- A CORREÇÃO MÁGICA --- */
+  max-height: 90vh; /* Altura máxima de 90% da tela */
+  overflow-y: auto; /* Cria barra de rolagem se passar disso */
+}
+
+/* Barra de rolagem estilizada dentro do modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+    background: #ccc; 
+    border-radius: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-light); 
+}
+
+
+@keyframes modalPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close-button {
+  position: absolute;
+  top: 15px; right: 20px;
+  color: #aaa;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 10;
+}
+.close-button:hover { color: var(--primary-color); }
+
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 700; color: #444; margin-left: 10px;}
+.form-group input, .form-group select { width: 100%; box-sizing: border-box; }
+.form-group-checkbox {
+  display: flex; 
+  align-items: center; 
+  gap: 0.8rem;
+  background: #f9f9f9;
+  padding: 10px 15px;
+  border-radius: 15px;
+}
+.form-group-checkbox input { width: auto; }
+
+/* Grid de Resumo e Gráficos */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.summary-item {
+  background: linear-gradient(135deg, #ffffff, #fff8f5);
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid #ffe0d1;
+  text-align: center;
+  transition: transform 0.3s;
+}
+.summary-item:hover { transform: translateY(-5px); }
+.summary-item h3 { margin: 0; color: #666; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+.summary-item p { margin: 0.5rem 0 0; font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+
+.graficos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+  .graficos-grid { grid-template-columns: 1fr; }
+  header { flex-direction: column; text-align: center; }
+  .actions-bar { flex-direction: column; align-items: stretch; }
+  input { width: 100%; }
+}

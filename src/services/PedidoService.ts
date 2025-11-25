@@ -1,104 +1,93 @@
-import fs from 'fs';
-import path from 'path';
-import { Pedido } from '../models/Pedido';
-import { ClienteService } from './ClienteService';
-import { ProdutoService } from './ProdutoService';
+// src/services/PedidoService.ts
 
-let pedidos: Pedido[] = [];
-let proximoId = 1;
+import { pool } from '../database/database';
 
-interface ItemCarrinho {
-  produtoId: number;
-  quantidade: number;
+interface PedidoItem {
+    produtoId: number;
+    quantidade: number;
+}
+
+interface PedidoData {
+    clienteId: number;
+    formaPagamento: string;
+    itens: PedidoItem[];
 }
 
 export class PedidoService {
-  
-  static async criar(clienteId: number, itensCarrinho: ItemCarrinho[], formaPagamento: 'credito' | 'debito' | 'dinheiro' | 'pix'): Promise<Pedido | { erro: string }> {
-    const cliente = ClienteService.buscarPorId(clienteId);
-    if (!cliente) return { erro: `Cliente com ID ${clienteId} não encontrado.` };
 
-    const itensDoPedido = [];
-    let totalPedido = 0;
-    for (const item of itensCarrinho) {
-      const produto = ProdutoService.buscarPorId(item.produtoId);
-      if (!produto) return { erro: `Produto com ID ${item.produtoId} não encontrado.` };
-      itensDoPedido.push({ produto, quantidade: item.quantidade, precoUnitario: produto.preco });
-      totalPedido += produto.preco * item.quantidade;
+    // Este é o método que estava faltando!
+    async create(pedidoData: PedidoData) {
+        const { clienteId, formaPagamento, itens } = pedidoData;
+
+        if (!itens || itens.length === 0) {
+            throw new Error('O pedido deve conter pelo menos um item.');
+        }
+
+        const client = await pool.connect();
+
+        try {
+            // Inicia a transação
+            await client.query('BEGIN');
+
+            // 1. Insere o pedido na tabela 'pedidos' e pega o ID gerado
+            const pedidoQuery = `
+                INSERT INTO pedidos (cliente_id, forma_pagamento, total) 
+                VALUES ($1, $2, 0) RETURNING id
+            `;
+            const pedidoResult = await client.query(pedidoQuery, [clienteId, formaPagamento]);
+            const pedidoId = pedidoResult.rows[0].id;
+
+            // 2. Prepara para inserir os itens e calcular o total
+            const productIds = itens.map(item => item.produtoId);
+            let totalPedido = 0;
+
+            // Busca os preços de todos os produtos de uma só vez para eficiência
+            const precosResult = await client.query(
+                'SELECT id, preco, preco_promocional, em_promocao FROM produtos WHERE id = ANY($1::int[])',
+                [productIds]
+            );
+            
+            // Mapeia os preços por ID para fácil acesso
+            const precosMap = new Map<number, number>();
+            precosResult.rows.forEach(p => {
+                const precoFinal = p.em_promocao && p.preco_promocional ? p.preco_promocional : p.preco;
+                precosMap.set(p.id, parseFloat(precoFinal));
+            });
+            
+            // 3. Insere cada item na tabela 'pedido_itens'
+            for (const item of itens) {
+                const precoUnitario = precosMap.get(item.produtoId);
+
+                if (!precoUnitario) {
+                    throw new Error(`Produto com ID ${item.produtoId} não encontrado ou sem preço.`);
+                }
+                
+                totalPedido += precoUnitario * item.quantidade;
+
+                const itemQuery = `
+                    INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unitario) 
+                    VALUES ($1, $2, $3, $4)
+                `;
+                await client.query(itemQuery, [pedidoId, item.produtoId, item.quantidade, precoUnitario]);
+            }
+
+            // 4. Atualiza o pedido na tabela 'pedidos' com o total final calculado
+            await client.query('UPDATE pedidos SET total = $1 WHERE id = $2', [totalPedido, pedidoId]);
+
+            // Finaliza a transação com sucesso
+            await client.query('COMMIT');
+
+            return { id: pedidoId, total: totalPedido, ...pedidoData };
+
+        } catch (error) {
+            // Se qualquer etapa falhar, desfaz todas as operações
+            await client.query('ROLLBACK');
+            console.error("Erro no serviço ao criar pedido:", error);
+            throw new Error('Não foi possível processar o seu pedido. Tente novamente.');
+        } finally {
+            // Libera o cliente de volta para o pool de conexões
+            client.release();
+        }
     }
 
-    if (itensDoPedido.length === 0) return { erro: "O pedido deve ter pelo menos um item." };
-
-    const novoPedido: Pedido = {
-      id: proximoId++,
-      cliente,
-      itens: itensDoPedido,
-      total: totalPedido,
-      formaPagamento,
-      data: new Date(),
-    };
-    pedidos.push(novoPedido);
-
-    // Após criar o pedido, geramos e salvamos o comprovante.
-    const comprovanteTexto = this.gerarComprovante(novoPedido);
-    await this.salvarComprovanteEmTxt(novoPedido, comprovanteTexto);
-
-    return novoPedido;
-  }
-  
-  // Salva o texto do comprovante em um arquivo .txt
-  private static async salvarComprovanteEmTxt(pedido: Pedido, comprovante: string): Promise<void> {
-    const data = pedido.data;
-    // Formata a data para criar um nome de arquivo único e organizado (ex: 2025-09-18_20-30-05)
-    const timestamp = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}_${String(data.getHours()).padStart(2, '0')}-${String(data.getMinutes()).padStart(2, '0')}-${String(data.getSeconds()).padStart(2, '0')}`;
-    
-    // Define o nome do arquivo (ex: pedido-1-joao-silva-2025-09-18_20-30-05.txt)
-    const nomeClienteFormatado = pedido.cliente.nome.replace(/ /g, '-').toLowerCase();
-    const nomeArquivo = `pedido-${pedido.id}-${nomeClienteFormatado}-${timestamp}.txt`;
-    
-    // Define o caminho completo para o arquivo
-    const caminhoArquivo = path.join(__dirname, '..', '..', 'comprovantes', nomeArquivo);
-
-    try {
-      // A mágica acontece aqui: fs.promises.writeFile escreve o conteúdo no arquivo.
-      // O 'await' garante que o programa espere a escrita terminar.
-      await fs.promises.writeFile(caminhoArquivo, comprovante, 'utf-8');
-      console.log(`📄 Comprovante salvo em: ${caminhoArquivo}`);
-    } catch (error) {
-      // Se houver um erro ao salvar o arquivo, ele será mostrado no console do servidor,
-      // mas a aplicação não vai quebrar. O cliente ainda receberá a confirmação do pedido.
-      console.error(`❌ Erro ao salvar o comprovante para o pedido #${pedido.id}:`, error);
-    }
-  }
-
-  // --- Nenhuma outra função precisa de alteração ---
-
-  static listar(): Pedido[] { return pedidos; }
-  
-  static gerarComprovante(pedido: Pedido): string {
-    let comprovante = `====================================\n`;
-    comprovante += `      COMPROVANTE DE COMPRA\n`;
-    comprovante += `====================================\n`;
-    comprovante += `Pedido #${pedido.id}\n`;
-    const dataFormatada = `${String(pedido.data.getDate()).padStart(2, '0')}/${String(pedido.data.getMonth() + 1).padStart(2, '0')}/${pedido.data.getFullYear()} ${String(pedido.data.getHours()).padStart(2, '0')}:${String(pedido.data.getMinutes()).padStart(2, '0')}:${String(pedido.data.getSeconds()).padStart(2, '0')}`;
-    comprovante += `Data: ${dataFormatada}\n\n`;
-    comprovante += `Cliente: ${pedido.cliente.nome}\n`;
-    comprovante += `Telefone: ${pedido.cliente.telefone}\n`;
-    comprovante += `------------------------------------\n`;
-    comprovante += `Itens Comprados:\n`;
-    for (const item of pedido.itens) {
-        const totalItem = (item.quantidade * item.precoUnitario).toFixed(2).replace('.', ',');
-        const precoUnitarioFmt = item.precoUnitario.toFixed(2).replace('.', ',');
-        comprovante += `- ${item.quantidade}x ${item.produto.nome} (R$ ${precoUnitarioFmt}) = R$ ${totalItem}\n`;
-    }
-    comprovante += `------------------------------------\n`;
-    const totalFmt = pedido.total.toFixed(2).replace('.', ',');
-    const formaPagamentoFmt = pedido.formaPagamento.charAt(0).toUpperCase() + pedido.formaPagamento.slice(1);
-    comprovante += `Forma de Pagamento: ${formaPagamentoFmt}\n`;
-    comprovante += `\nTOTAL DO PEDIDO: R$ ${totalFmt}\n`;
-    comprovante += `====================================\n`;
-    comprovante += `   Obrigado pela preferência!\n`;
-    comprovante += `====================================\n`;
-    return comprovante;
-  }
 }

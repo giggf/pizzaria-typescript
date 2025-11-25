@@ -1,9 +1,3 @@
-### Bárbara Falcão - 2506486 
-### Giovana de Godoy Felisbino - 2507579
-### Giovanna Falgetano - 2512938
-### Lais da Rosa Câmara - 2505420
-
-
 # Sistema de Gestão de Pizzaria
 
 ## 1. Visão Geral
@@ -60,8 +54,24 @@ O código é organizado seguindo o padrão de design **Model-Service-Controller*
 **Pré-requisitos**:
 *   Node.js (versão 14 ou superior)
 *   NPM
+*   pgAdmin 4
+*   Dokcer v28.4.0
 
-**Passos para instalação:**
+**Passos para a instalação do container no Docker:**
+1. Abra o terminal PowerShell
+2. Copie e cole o código abaixo por completo
+    ```cmd powershell
+    hostname
+    docker run -d `
+    --name sistema-pizzaria `
+    -e POSTGRES_USER=Pizzaria `
+    -e POSTGRES_PASSWORD=Pizzaria@2025 `
+    -e POSTGRES_DB=db_pizzaria `
+    -p 5432:5432 `
+    postgres:latest 
+    ```
+
+**Passos para clonagem de repositório e acesso:**
 
 1.  Clone o repositório ou navegue até a pasta raiz do projeto.
 2.  Acessar a pasta "pizzaria-sistema" pelo terminal 
@@ -69,7 +79,7 @@ O código é organizado seguindo o padrão de design **Model-Service-Controller*
     cd 'pasta em que o repositório se encontra em sua máquina'
     ```
     ```bash
-    cd pizzaria-sistema
+    cd Pizzaria-Sistema
     ```
 3.  Abra um terminal e instale as dependências:
     ```bash
@@ -79,22 +89,24 @@ O código é organizado seguindo o padrão de design **Model-Service-Controller*
     ```bash
     npm install express
     ```
-    
+
+**Passos para a configuração do pgAdmin 4:**
+1. Abra o pgAdmin (essa etapa pode demorar um pouco)
+2. Selecione "Add New Server"e dê um nome para a imagem do servidor 
+3. Coloque o nome do host como `localhost`
+4. Mantenha a porta como `5432`, se ela não estiver, altere-a 
+5. Altere o username para `Pizzaria`
+6. Coloque a senha `Pizzaria@2025`
+7. Salve as alterações 
+8. Entre no servidor 
+9. Entre em "Database"
+10. Entre em "db_pizzaria"
+11. Clique com o botão direito do mouse
+12. Selecione o arquivo chamado "database" do repositório clonado
+
 **Para executar em modo de desenvolvimento (com recarregamento automático):**
-    ```bash
-    npm run dev
-    ```
+```bash
+npm run dev
+```
 
 O servidor será iniciado em `http://localhost:3000`.
-
-**Para compilar e executar em modo de produção:**
-
-1.  Compile o código TypeScript para JavaScript:
-    ```bash
-    npm run build
-    ```
-
-2.  Inicie o servidor a partir dos arquivos compilados na pasta /dist:
-    ```bash
-    npm run start
-    ```

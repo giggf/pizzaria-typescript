@@ -1,29 +1,48 @@
+
 import { Router } from 'express';
-import { ClienteController } from '../controllers/ClienteController';
-import { ProdutoController } from '../controllers/ProdutoController';
-import { PedidoController } from '../controllers/PedidoController';
-import { RelatorioController } from '../controllers/RelatorioController';
+import { authMiddleware, adminMiddleware } from '../middlewares/authMiddleware';
+
+// Importa todas as funções dos controllers
+import * as AuthController from '../controllers/AuthController';
+import * as ClienteController from '../controllers/ClienteController';
+import * as ProdutoController from '../controllers/ProdutoController';
+import * as PedidoController from '../controllers/PedidoController';
+import * as RelatorioController from '../controllers/RelatorioController';
 
 const router = Router();
 
+// --- ROTAS DE AUTENTICAÇÃO (Públicas) ---
+router.post('/auth/register', AuthController.register);
+router.post('/auth/login', AuthController.login);
+router.get('/auth/me', authMiddleware, AuthController.getMe); // Precisa estar logado para saber quem é
 
+// --- ROTAS DE CLIENTE (Precisa estar logado) ---
+router.post('/pedidos', authMiddleware, PedidoController.createPedido);
 
-// --- Rotas de Clientes ---
-router.get('/clientes', ClienteController.listar);
-router.post('/clientes', ClienteController.criar);
+// Rota para clientes logados verem os produtos (agora é protegida)
+router.get('/produtos', authMiddleware, ProdutoController.getAllProdutos);
+router.get('/produtos/search', authMiddleware, ProdutoController.searchProdutos);
 
-// --- Rotas de Produtos (Cardápio) ---
-router.get('/produtos', ProdutoController.listar);
-router.get('/produtos/:id', ProdutoController.buscarPorId);
-router.post('/produtos', ProdutoController.criar);
-router.delete('/produtos/:id', ProdutoController.excluir);
-router.put('/produtos/:id', ProdutoController.editar); // <-- LINHA ADICIONADA
+// --- ROTAS DE ADMIN (Precisa ser admin) ---
 
-// --- Rotas de Pedidos ---
-router.get('/pedidos', PedidoController.listar);
-router.post('/pedidos', PedidoController.criar);
+// Gerenciamento de Clientes
+router.get('/clientes', authMiddleware, adminMiddleware, ClienteController.getAllClientes);
+router.get('/clientes/search', authMiddleware, adminMiddleware, ClienteController.searchClientes);
+router.delete('/clientes/:id', authMiddleware, adminMiddleware, ClienteController.deleteCliente);
 
-// --- Rotas de Relatórios ---
-router.get('/relatorios/vendas', RelatorioController.gerar);
+// Gerenciamento de Produtos
+router.post('/produtos', authMiddleware, adminMiddleware, ProdutoController.createProduto);
+router.put('/produtos/:id', authMiddleware, adminMiddleware, ProdutoController.updateProduto);
+// ATENÇÃO: a rota de promoção no seu antigo produto controller era PATCH, vamos manter
+// router.patch('/produtos/:id/promocao', authMiddleware, adminMiddleware, ProdutoController.updatePromocao);
+router.delete('/produtos/:id', authMiddleware, adminMiddleware, ProdutoController.deleteProduto);
+router.get('/produtos/:id', authMiddleware, adminMiddleware, ProdutoController.getProdutoById); // Admin também pode ver por ID
+
+// Gerenciamento de Pedidos
+router.get('/pedidos', authMiddleware, adminMiddleware, PedidoController.getAllPedidos);
+router.delete('/pedidos/:id', authMiddleware, adminMiddleware, PedidoController.deletePedido);
+
+// Relatórios
+router.get('/relatorios/periodo', authMiddleware, adminMiddleware, RelatorioController.getRelatorioPeriodo);
 
 export default router;

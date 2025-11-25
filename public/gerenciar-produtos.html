@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciar Produtos</title>
+  <link rel="stylesheet" href="admin.css"> <!-- Link para o novo CSS -->
+</head>
+<body>
+  <header>
+    <h1>🍕 Gerenciar Produtos 🍕</h1>
+    <nav><a id="logout-btn" href="#" class="nav-link">Sair</a><a href="/admin.html" class="nav-link">Voltar ao Painel</a></nav>
+  </header>
+
+  <main class="admin-container">
+    <div class="admin-card">
+      <div class="actions-bar">
+        <input type="text" id="search-product-input" placeholder="Pesquisar produto...">
+        <button id="add-new-product-btn" class="btn-primary">Adicionar Novo Produto</button>
+      </div>
+      <div id="product-list"><p>Carregando produtos...</p></div>
+    </div>
+  </main>
+
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="modal-title">Adicionar Produto</h2>
+      <form id="product-form">
+        <!-- public/gerenciar-produtos.html -->
+
+
+        <input type="hidden" id="product-id">
+        <div class="form-group"><label for="nome">Nome</label><input type="text" id="nome" required></div>
+      <!-- ... (dentro do <form id="product-form">) ... -->
+<div class="form-group">
+  <label for="descricao">Descrição</label>
+  <input type="text" id="descricao">
+</div>
+
+<!-- ADICIONE ESTE NOVO CAMPO AQUI -->
+<div class="form-group">
+  <label for="imagem_url">URL da Imagem (Opcional)</label>
+  <input type="text" id="imagem_url" placeholder="https://exemplo.com/imagem.jpg">
+</div>
+
+<div class="form-group">
+  <label for="preco">Preço (Ex: 45.50)</label>
+  <input type="number" step="0.01" id="preco" required>
+</div>
+<!-- ... -->
+        <div class="form-group">
+          <label for="categoria">Categoria</label>
+          <select id="categoria" required>
+            <option value="pizza">Pizza Salgada</option><option value="pizzas doces">Pizza Doce</option>
+            <option value="bebida">Bebida</option><option value="sobremesa">Sobremesa</option>
+          </select>
+        </div><hr>
+        <div class="form-group form-group-checkbox"><label><input type="checkbox" id="em-promocao">Produto em promoção?</label></div>
+        <div class="form-group" id="promo-price-group" style="display: none;"><label for="preco-promocional">Preço Promocional</label><input type="number" step="0.01" id="preco-promocional"></div>
+        <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem;">Salvar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin-produtos.js"></script>
+</body>
+</html>

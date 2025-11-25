@@ -7,43 +7,51 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-
-  <header>
-    <h1>🍕 Cardápio da Pizzaria 🍕</h1>
-    <nav class="main-nav">
-      <a href="/cadastro.html" class="nav-link">Cadastrar Cliente</a>
-      <a href="/cadastro-produto.html" class="nav-link">Cadastrar Produto</a>
-      <a href="/admin.html" class="nav-link">Painel Admin</a>
-    </nav>
-    <div id="cart-icon" class="cart-icon">
-      🛒
-      <span id="cart-count" class="cart-count">0</span>
-    </div>
-  </header>
-
-  <div class="filter-container">
-    <button class="filter-btn active" data-categoria="todos">Mostrar Todos</button>
-    <button class="filter-btn" data-categoria="pizza">Pizzas Salgadas</button>
-    <button class="filter-btn" data-categoria="pizzas doces">Pizzas Doces</button>
-    <button class="filter-btn" data-categoria="bebida">Bebidas</button>
-    <button class="filter-btn" data-categoria="sobremesa">Sobremesas</button>
-  </div>
-
-  <main id="menu-container">
-    <div class="products-section">
-      <h2>Produtos</h2>
-      <div id="products-grid-container" class="products-grid">
-        <!-- Todos os produtos serão inseridos aqui pelo JS -->
+  
+<header>
+    <div class="header-content">
+      <div class="logo-container">
+        <img src="gatinho.jpg" alt="Logo da Pizzaria" class="logo">
       </div>
+      <h1>Nosso Cardápio</h1>
     </div>
+    <nav class="main-nav">
+      <a href="#" id="logout-btn" class="nav-link">Sair</a>
+    </nav>
+</header>
+
+<div class="page-container">
+  <aside class="sidebar">
+    <h3>Categorias</h3>
+    <div class="filter-container">
+      <button class="filter-btn active" data-categoria="todos"><i class="fas fa-list-ul"></i> Mostrar Todos</button>
+      <button class="filter-btn" data-categoria="pizza"><i class="fas fa-pizza-slice"></i> Pizzas Salgadas</button>
+      <button class="filter-btn" data-categoria="pizzas doces"><i class="fas fa-pizza-slice"></i> Pizzas Doces</button>
+      <button class="filter-btn" data-categoria="bebida"><i class="fas fa-cocktail"></i> Bebidas</button>
+      <button class="filter-btn" data-categoria="sobremesa"><i class="fas fa-cookie-bite"></i> Sobremesas</button>
+    </div>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Pesquisar produto...">
+    </div>
+  </aside>
+  
+  <main id="menu-container">
+      <div id="loading">Carregando cardápio...</div>
+      <div class="products-section" style="display: none;">
+        <h2 id="section-title">Todos os produtos</h2>
+        <div id="products-grid-container" class="products-grid">
+          <!-- Produtos serão inseridos aqui pelo JavaScript -->
+        </div>
+      </div>
   </main>
+</div>
 
-  <div id="loading">Carregando cardápio...</div>
-
-  <div id="cart-modal" class="modal">
+<!-- Modal do Carrinho -->
+<div id="cart-modal" class="modal">
     <div class="modal-content">
       <span class="close-button">&times;</span>
       <h2>Meu Carrinho</h2>
@@ -52,15 +60,10 @@
         <strong>Total:</strong>
         <span id="cart-total-value">R$ 0,00</span>
       </div>
-      <div id="checkout-section" class="checkout-section">
+      <div id="checkout-section" class="checkout-section" style="display: none;">
         <hr>
         <h3>Finalizar Pedido</h3>
-        <div class="form-group">
-          <label for="cliente-select">Selecione o Cliente</label>
-          <select id="cliente-select" required>
-            <option value="">Carregando clientes...</option>
-          </select>
-        </div>
+        <p><strong>Cliente:</strong> <span id="cliente-logado">Carregando...</span></p>
         <div class="form-group">
           <label for="pagamento-select">Forma de Pagamento</label>
           <select id="pagamento-select" required>
@@ -73,40 +76,25 @@
         <button id="checkout-btn" class="checkout-btn">Finalizar Pedido</button>
       </div>
     </div>
-  </div>
+</div>
 
-  <div id="edit-product-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-edit-modal" class="close-button">&times;</span>
-      <h2>Editar Produto</h2>
-      <form id="edit-product-form" class="form-card" style="box-shadow: none; padding: 0;">
-        <input type="hidden" id="edit-product-id">
-        <div class="form-group">
-          <label for="edit-nome">Nome do Produto</label>
-          <input type="text" id="edit-nome" required>
-        </div>
-        <div class="form-group">
-          <label for="edit-descricao">Descrição</label>
-          <input type="text" id="edit-descricao" required>
-        </div>
-        <div class="form-group">
-          <label for="edit-preco">Preço</label>
-          <input type="number" step="0.01" id="edit-preco" required>
-        </div>
-        <div class="form-group">
-          <label for="edit-categoria">Categoria</label>
-          <select id="edit-categoria" required>
-              <option value="pizza">Pizza Salgada</option>
-              <option value="pizzas doces">Pizza Doce</option>
-              <option value="bebida">Bebida</option>
-              <option value="sobremesa">Sobremesa</option>
-          </select>
-        </div>
-        <button type="submit">Salvar Alterações</button>
-      </form>
+<!-- Modal do Comprovante -->
+<div id="receipt-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-button">&times;</span>
+    <h2>Comprovante do Pedido</h2>
+    <div id="receipt-content">
+        <!-- O JS irá preencher aqui -->
     </div>
+    <button id="print-receipt-btn">Imprimir</button>
   </div>
-  
-  <script src="script.js"></script>
+</div>
+
+<div id="cart-icon" class="cart-icon">
+  <i class="fas fa-shopping-cart"></i> <!-- Adicionei um ícone aqui caso o emoji sumiu -->
+  <span id="cart-count" class="cart-count">0</span>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

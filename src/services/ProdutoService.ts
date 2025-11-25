@@ -1,96 +1,113 @@
-import fs from 'fs';
-import path from 'path';
-import csv from 'csv-parser';
-import { createObjectCsvWriter } from 'csv-writer';
-import { Produto, CategoriaProduto } from '../models/Produto';
+// src/services/ProdutoService.ts
 
-let produtos: Produto[] = [];
-let proximoId = 1;
-const caminhoItensCsv = path.join(__dirname, '..', 'database', 'itens.csv');
+import pool from '../database/database';
+
+interface Produto {
+  id: number;
+  nome: string;
+  descricao?: string;
+  preco: number;
+  categoria: string;
+}
 
 export class ProdutoService {
-  static async inicializarProdutos() {
-    if (!fs.existsSync(caminhoItensCsv)) {
-      console.warn("⚠️ Arquivo itens.csv não encontrado. A lista de produtos estará vazia.");
-      return;
-    }
 
-    produtos = await this.lerProdutosDeCSV(caminhoItensCsv);
-
-    if (produtos.length > 0) {
-      proximoId = Math.max(...produtos.map(p => p.id)) + 1;
+  static async listar(): Promise<Produto[]> {
+    try {
+      const sql = 'SELECT * FROM itens ORDER BY Categoria, Nome;';
+      const resultado = await pool.query(sql);
+      return resultado.rows;
+    } catch (error) {
+      console.error('Erro ao listar itens:', error);
+      throw error;
     }
-    console.log('✅ Itens carregados do arquivo unificado com sucesso!');
   }
 
-  private static lerProdutosDeCSV(caminhoArquivo: string): Promise<Produto[]> {
-    return new Promise((resolve, reject) => {
-      const resultados: Produto[] = [];
-      fs.createReadStream(caminhoArquivo)
-        .pipe(csv())
-        .on('data', (data) => {
-          if (data.ID && data.Nome) {
-            resultados.push({
-              id: parseInt(data.ID), nome: data.Nome, descricao: data.Descricao,
-              preco: parseFloat(data.Preco), categoria: data.Categoria as CategoriaProduto,
-            });
-          }
-        })
-        .on('end', () => resolve(resultados))
-        .on('error', (error) => reject(error));
-    });
+  static async buscarPorId(id: number): Promise<Produto | undefined> {
+    try {
+      const sql = 'SELECT * FROM itens WHERE ID = $1;';
+      const resultado = await pool.query(sql, [id]);
+      return resultado.rows[0];
+    } catch (error) {
+      console.error(`Erro ao buscar item com ID ${id}:`, error);
+      throw error;
+    }
   }
 
-  static async criar(nome: string, descricao: string, preco: number, categoria: CategoriaProduto): Promise<Produto> {
-    const novoProduto: Produto = { id: proximoId++, nome, descricao, preco, categoria };
-    produtos.push(novoProduto);
-    await this.salvarItensEmCSV();
-    return novoProduto;
+  static async criar(produto: Produto): Promise<Produto> {
+    try {
+      const { id, nome, descricao, preco, categoria } = produto;
+      const sql = 'INSERT INTO itens (ID, Nome, Descricao, Preco, Categoria) VALUES ($1, $2, $3, $4, $5) RETURNING *;';
+      const values = [id, nome, descricao, preco, categoria];
+      const resultado = await pool.query(sql, values);
+      return resultado.rows[0];
+    } catch (error) {
+      console.error('Erro ao criar item:', error);
+      throw error;
+    }
+  }
+
+  static async editar(id: number, dados: Partial<Produto>): Promise<Produto> {
+    try {
+      const { nome, descricao, preco, categoria } = dados;
+      const sql = 'UPDATE itens SET Nome = $1, Descricao = $2, Preco = $3, Categoria = $4 WHERE ID = $5 RETURNING *;';
+      const values = [nome, descricao, preco, categoria, id];
+      const resultado = await pool.query(sql, values);
+      if (resultado.rowCount === 0) throw new Error('Produto não encontrado para edição.');
+      return resultado.rows[0];
+    } catch (error) {
+      console.error(`Erro ao editar item com ID ${id}:`, error);
+      throw error;
+    }
   }
 
   static async excluir(id: number): Promise<boolean> {
-    const index = produtos.findIndex(p => p.id === id);
-    if (index === -1) return false;
-    produtos.splice(index, 1);
-    await this.salvarItensEmCSV();
-    return true;
-  }
-
-  // --- NOVO MÉTODO ADICIONADO ---
-  static async editar(id: number, dadosProduto: Partial<Produto>): Promise<Produto | null> {
-    const index = produtos.findIndex(p => p.id === id);
-    if (index === -1) {
-      return null;
+    try {
+      const sql = 'DELETE FROM itens WHERE ID = $1;';
+      const resultado = await pool.query(sql, [id]);
+      return (resultado.rowCount || 0) > 0;
+    } catch (error) {
+      console.error(`Erro ao excluir item com ID ${id}:`, error);
+      throw error;
     }
-    const produtoOriginal = produtos[index];
-    const produtoAtualizado = {
-      ...produtoOriginal,
-      ...dadosProduto,
-    };
-    produtos[index] = produtoAtualizado;
-    await this.salvarItensEmCSV();
-    return produtoAtualizado;
-  }
-  
-  private static async salvarItensEmCSV() {
-    const writer = createObjectCsvWriter({
-      path: caminhoItensCsv,
-      header: [
-        { id: 'id', title: 'ID' }, { id: 'nome', title: 'Nome' },
-        { id: 'descricao', title: 'Descricao' }, { id: 'preco', title: 'Preco' },
-        { id: 'categoria', title: 'Categoria' },
-      ],
-    });
-    await writer.writeRecords(produtos);
-    console.log('📝 Arquivo itens.csv atualizado com sucesso.');
   }
 
-  static listar(categoria?: CategoriaProduto): Produto[] { 
-    if (categoria) {
-      return produtos.filter(p => p.categoria === categoria);
+  static async search(termo: string): Promise<Produto[]> {
+    try {
+      const sql = 'SELECT * FROM itens WHERE Nome ILIKE $1 OR Categoria ILIKE $1 ORDER BY Nome;';
+      const values = [`%${termo}%`];
+      const resultado = await pool.query(sql, values);
+      return resultado.rows;
+    } catch (error) {
+      console.error('Erro ao pesquisar itens:', error);
+      throw error;
     }
-    return produtos; 
   }
 
-  static buscarPorId(id: number): Produto | undefined { return produtos.find(p => p.id === id); }
+  static async atualizarPromocao(id: number, emPromocao: boolean, precoPromocional?: number): Promise<Produto> {
+    try {
+      const precoFinal = emPromocao ? precoPromocional : null;
+      const sql = 'UPDATE itens SET em_promocao = $1, preco_promocional = $2 WHERE ID = $3 RETURNING *;';
+      const values = [emPromocao, precoFinal, id];
+      const resultado = await pool.query(sql, values);
+      if (resultado.rowCount === 0) throw new Error('Produto não encontrado.');
+      return resultado.rows[0];
+    } catch (error) {
+      console.error(`Erro ao atualizar promoção do item ${id}:`, error);
+      throw error;
+    }
+  }
+
+  static async atualizarUrlImagem(id: number, url: string): Promise<Produto> {
+    try {
+      const sql = 'UPDATE itens SET imagem_url = $1 WHERE ID = $2 RETURNING *;';
+      const values = [url, id];
+      const resultado = await pool.query(sql, values);
+      if (resultado.rowCount === 0) throw new Error('Produto não encontrado.');
+      return resultado.rows[0];
+    } catch (error) {
+      console.error(`Erro ao atualizar imagem do item ${id}:`, error);
+      throw error;
+    }
+  }
 }

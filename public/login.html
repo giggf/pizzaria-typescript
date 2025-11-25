@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Bem-vindo à Pizzaria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <header class="login-header">
+    <img src="gatinho.jpg" alt="Logo da Pizzaria" class="logo">
+    <nav class="main-nav">
+      <a href="#" id="quem-somos-btn">Quem Somos Nós?</a>
+    </nav>
+  </header>
+
+  <main class="login-container">
+    <h1 class="welcome-title">Bem-vindo à Pizzaria!</h1>
+    <div class="login-card">
+      
+      <!-- TELA DE LOGIN -->
+      <div id="login-view">
+        <h2>Acessar sua conta</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required>
+          </div>
+          <div class="form-group">
+            <label for="login-senha">Senha</label>
+            <input type="password" id="login-senha" required>
+          </div>
+          <button type="submit">Entrar</button>
+        </form>
+        <p class="toggle-view">Não tem uma conta? <a href="#" id="show-register">Cadastre-se</a></p>
+      </div>
+
+      <!-- TELA DE CADASTRO -->
+      <div id="register-view" style="display: none;">
+        <h2>Crie sua conta</h2>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="register-nome">Nome Completo</label>
+            <input type="text" id="register-nome" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="register-telefone">Telefone</label>
+            <input type="tel" id="register-telefone" required>
+          </div>
+
+          <!-- BLOCO DE ENDEREÇO (INTEGRADO COM VIACEP) -->
+          <div class="form-group">
+            <label for="cep">CEP</label>
+            <input type="text" id="cep" placeholder="00000-000" maxlength="9" required>
+          </div>
+
+          <div class="form-group">
+            <label for="logradouro">Rua</label>
+            <!-- Readonly e cinza para indicar preenchimento automático -->
+            <input type="text" id="logradouro" readonly style="background-color: #f0f0f0;">
+          </div>
+
+          <!-- Layout Flex para colocar Número e Bairro na mesma linha -->
+          <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="numero">Número</label>
+              <input type="text" id="numero" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="bairro">Bairro</label>
+              <input type="text" id="bairro" readonly style="background-color: #f0f0f0;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cidade">Cidade / UF</label>
+            <input type="text" id="cidade" readonly style="background-color: #f0f0f0;">
+          </div>
+
+          <!-- CAMPO OCULTO: Recebe o endereço completo para o Backend -->
+          <input type="hidden" id="register-endereco">
+          <!-- FIM BLOCO ENDEREÇO -->
+
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="register-senha">Senha</label>
+            <input type="password" id="register-senha" required>
+          </div>
+          
+          <button type="submit">Cadastrar</button>
+        </form>
+        <p class="toggle-view">Já tem uma conta? <a href="#" id="show-login">Faça Login</a></p>
+      </div>
+      
+      <div id="status-message" class="status-message"></div>
+    </div>
+  </main>
+  
+  <footer id="contato" class="contato-footer">
+      <h3>Entre em Contato</h3>
+      <p>Telefone: (99) 99999-9999 | Email: contato@pizzaria.com</p>
+  </footer>
+
+  <div id="quem-somos-modal" class="modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background-color: white; padding: 2rem; border-radius: 8px; position: relative; max-width: 500px;">
+      <span class="close-button" style="position: absolute; top: 10px; right: 15px; font-size: 2rem; cursor: pointer;">&times;</span>
+      <h2>Nossa História</h2>
+      <p>Nascemos da paixão por pizzas autênticas, utilizando ingredientes frescos e receitas tradicionais para levar a melhor experiência à sua mesa. Nossa missão é simples: criar momentos felizes, uma fatia de cada vez!</p>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

@@ -3,61 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <title>Painel Administrativo - Relatórios</title>
-  <link rel="stylesheet" href="style.css"> <!-- Reutiliza o estilo principal -->
+<link rel="stylesheet" href="admin.css">
   <style>
-    .admin-container { padding: 2rem; max-width: 900px; margin: auto; }
+    /* Seus estilos originais, com as cores neutras mantidas */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .admin-container { padding: 2rem; max-width: 1200px; margin: auto; }
     .report-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
     .report-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .report-table th, .report-table td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
     .report-table th { background-color: #f2f2f2; }
-    .report-table td:last-child { text-align: right; font-weight: bold; }
-    #loading-admin { text-align: center; font-size: 1.2rem; padding: 2rem; }
+    #loading-admin { text-align: center; font-size: 1.2rem; padding: 2rem; display: none; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;}
+    .summary-item { background: #f9f9f9; padding: 1rem; border-radius: 8px;}
+    .summary-item h3 { margin: 0 0 0.5rem 0; color: #333; } /* Cor do título do card de resumo ajustada */
+    .summary-item p { font-size: 1.5rem; font-weight: bold; margin: 0; }
+    
+    /* Novos estilos para os filtros com cores neutras */
+    .filters-card { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .filters-card label { font-weight: bold; }
+    .filters-card input[type="date"] { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+    .filters-card button { 
+      padding: 0.6rem 1.2rem; 
+      background-color: #f2f2f2; /* Cor similar ao cabeçalho da tabela */
+      color: #333; /* Texto escuro */
+      border: 1px solid #ccc; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 1rem; 
+      font-weight: bold;
+    }
+    .filters-card button:hover { background-color: #e0e0e0; } /* Efeito hover mais escuro */
+
+    /* Estilo para os gráficos */
+    .graficos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 900px) { .graficos-grid { grid-template-columns: 1fr; } }
   </style>
+
+  <!-- Biblioteca de Gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
 </head>
 <body>
   <header>
     <h1>📊 Painel Administrativo 📊</h1>
-    <a href="/" class="nav-link">Voltar para o Cardápio</a>
+    <nav class="main-nav" style="margin-top: 1rem;">
+     <a id="logout-btn" href="#" class="nav-link">Sair</a>
+      <a href="/gerenciar-produtos.html" class="nav-link">Gerenciar Produtos</a> 
+      <a href="/gerenciar-clientes.html" class="nav-link">Gerenciar Clientes</a>
+      <a href="/gerenciar-pedidos.html" class="nav-link">Gerenciar Pedidos</a> 
+    </nav>
   </header>
 
   <main class="admin-container">
+    <!-- public/admin.html -->
+<div class="report-card">
+  <h2>Filtrar</h2>
+  <div class="filters-card">
+    <label for="dataInicio">De:</label>
+    <input type="date" id="dataInicio">
+    <label for="dataFim">Até:</label>
+    <input type="date" id="dataFim">
+    <button id="btnGerarRelatorio">Gerar Relatório</button>
+  </div>
+  <div class="filters-presets" style="margin-top: 1rem; display:flex; gap: 0.5rem;">
+      <button class="btn-preset" data-range="this-month">Este Mês</button>
+      <button class="btn-preset" data-range="last-month">Mês Passado</button>
+      <button class="btn-preset" data-range="this-year">Este Ano</button>
+  </div>
+</div>
+
+    <!-- Indicador de carregamento -->
     <div id="loading-admin">Carregando relatórios...</div>
 
+    <!-- Conteúdo dos Relatórios (inicialmente escondido) -->
     <div id="reports-content" style="display: none;">
-      <!-- Card do Relatório Mensal -->
+      
       <div class="report-card">
-        <h2>Vendas por Mês</h2>
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Mês</th>
-              <th style="text-align: right;">Total Arrecadado</th>
-            </tr>
-          </thead>
-          <tbody id="monthly-report-body">
-            <!-- Dados serão inseridos pelo JS -->
-          </tbody>
-        </table>
+        <h2>Resumo do Período</h2>
+        <div id="summary-container" class="summary-grid">
+          <!-- O JS irá criar os itens aqui -->
+        </div>
       </div>
-
-      <!-- Card do Relatório Semanal -->
+      
+      <div class="report-card graficos-grid">
+        <div>
+          <h2>Vendas Diárias no Período</h2>
+          <canvas id="graficoVendas"></canvas>
+        </div>
+        <div>
+          <h2>Top 10 Produtos Mais Vendidos</h2>
+          <canvas id="graficoTopProdutos"></canvas>
+        </div>
+      </div>
+      
       <div class="report-card">
-        <h2>Vendas por Semana</h2>
+        <h2>Todos os produtos Vendidos no Período</h2>
         <table class="report-table">
           <thead>
             <tr>
-              <th>Período</th>
-              <th style="text-align: right;">Total Arrecadado</th>
+              <th>Produto</th>
+              <th>Quantidade Vendida</th>
+              <th style="text-align: right;">Faturamento Gerado</th>
             </tr>
           </thead>
-          <tbody id="weekly-report-body">
-            <!-- Dados serão inseridos pelo JS -->
+          <tbody id="corpoTabelaTodosProdutos">
+            <!-- Linhas preenchidas pelo JS -->
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
+  <!-- O arquivo admin.js da resposta anterior continua válido -->
   <script src="admin.js"></script>
 </body>
 </html>
